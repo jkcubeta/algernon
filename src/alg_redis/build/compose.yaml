@@ -1,0 +1,18 @@
+version: "3.3"
+
+services:
+  redis:
+    image: redis
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+    networks:
+      default:
+        aliases:
+          - redis

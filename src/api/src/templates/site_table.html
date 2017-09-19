@@ -1,0 +1,21 @@
+{% extends 'navbar.html' %}
+
+{% block body %}
+<input type="hidden" id="type" value="{{ gauge_type }}">
+<h1>{{ human_gauge_type }}</h1>
+<table>
+    {% for site in sites %}
+        <tr>
+            <th>
+                {{ site }}
+            </th>
+        </tr>
+        <tr>
+            {% for team in sites[site] %}
+               <td class = "gauge" id="{{ team.team_id }}" onclick="window.location ='/{{ gauge_type }}/{{ team.team_id }}'"></td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+</table>
+<script type="text/javascript" src="{{ url_for('static', filename='gauges.js') }}"></script>
+{% endblock %}

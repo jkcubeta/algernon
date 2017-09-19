@@ -1,0 +1,14 @@
+version: "3.3"
+
+services:
+  api:
+    image: lane-docker.algernon.lan/alg_api:0.1
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback

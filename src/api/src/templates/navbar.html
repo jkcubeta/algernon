@@ -1,0 +1,61 @@
+{% extends 'layout.html' %}
+
+{% block navbar %}
+    <ul>
+        <li class="dropdown navbar"><a class="active" href="/home">home</a></li>
+        <li class="dropdown navbar"><a class="active" href="/caseload">caseload</a></li>
+        <li class="dropdown navbar"><a class="active" href="/intake/overview">intake</a></li>
+        <li class="dropdown navbar">
+            <a id ="roster" href="javascript:void(0)" class="dropbtn" onclick="dropFunction(event)">roster</a>
+            <div class="dropdown-content" id="rosterDropdown">
+                {% for site in sites %}
+                    <h3>{{ site }}</h3>
+                        {% for team in sites[site] %}
+                            <a href='/roster/{{ team.team_id }}'>{{ team.team_name }} </a>
+                        {% endfor %}
+                {% endfor %}
+            </div>
+        </li>
+        <li class="dropdown navbar">
+            <a id = "unapproved" href="javascript:void(0)" class="dropbtn" onclick="dropFunction(event)">unapproved services</a>
+                <div class="dropdown-content" id="unapprovedDropdown">
+                    {% for site in sites %}
+                        <h3>{{ site }}</h3>
+                            {% for team in sites[site] %}
+                                <a href='/unapproved/{{ team.team_id }}'>{{ team.team_name }} </a>
+                            {% endfor %}
+                    {% endfor %}
+                </div>
+        </li>
+        <li class="dropdown navbar">
+            <a id="redx" href="javascript:void(0)" class="dropbtn" onclick="dropFunction(event)">clinical red x</a>
+                <div class="dropdown-content" id="redxDropdown">
+                    {% for site in sites %}
+                        <h3>{{ site }}</h3>
+                            {% for team in sites[site] %}
+                                <a href='/redx/{{ team.team_id }}'>{{ team.team_name }} </a>
+                            {% endfor %}
+                    {% endfor %}
+                </div>
+        </li>
+        <li class="dropdown navbar">
+            <a id="tx_plans" href="javascript:void(0)" class="dropbtn" onclick="dropFunction(event)">expired tx plans</a>
+            <div class="dropdown-content" id="tx_plansDropdown">
+                {% for site in sites %}
+                    <h3>{{ site }}</h3>
+                        {% for team in sites[site] %}
+                            <a href='/exptx/{{ team.team_id }}'>{{ team.team_name }} </a>
+                        {% endfor %}
+                {% endfor %}
+        </div>
+        </li>
+        <li class="dropdown navbar">
+            <a id = "gauges" href="javascript:void(0)" class="dropbtn" onclick="dropFunction(event)">gauges</a>
+            <div class="dropdown-content" id="gaugesDropdown">
+                <a href="/gages/unapproved">unapproved services</a>
+                <a href="/gages/exptx">expired tx plans</a>
+                <a href="/gages/redx">clinical red x</a>
+            </div>
+        </li>
+    </ul>
+{% endblock %}
