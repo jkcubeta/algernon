@@ -19,6 +19,7 @@ from .app import app
 
 
 UPDATE_CLIENT_BATCH_SIZE = alg_utils.get_config('tuning', 'update_client_batch_size')
+PICKLE_PAUSE = int(alg_utils.get_config('tuning', 'pickle_pause'))
 VC_BATCH_SIZE = alg_utils.get_config('tuning', 'vc_batch_size')
 NOTE_ARBITRATION_BATCH_SIZE = alg_utils.get_config('tuning', 'note_arbitration_batch_size')
 CLINICAL_HOTWORDS = alg_utils.get_config('overwatch', 'clinical_hotwords')
@@ -55,13 +56,21 @@ def vc_single(email):
 def update_pickle_datastore():
     data_types = ['csw', 'visits', 'clients']
     team_data = report_tasks.get_csw_teams()
+    pause = 0
     for team_id in team_data:
-        book_tasks = []
-        team_name = team_data[team_id]['team_name']
-        book_tasks.append(update_team_book.si(team_id, team_name))
-        for data_type in data_types:
-            book_tasks.append(get_datastore_report.s(team_id, data_type))
-        chord(group(book_tasks))(update_datastore.s(team_name=team_name))
+        update_team_datastore.apply_async((team_data[team_id], data_types), countdown=pause)
+        pause += PICKLE_PAUSE
+
+
+@app.task
+def update_team_datastore(team_data, data_types):
+    team_id = team_data['team_id']
+    book_tasks = []
+    team_name = team_data['team_name']
+    book_tasks.append(update_team_book.si(team_id, team_name))
+    for data_type in data_types:
+        book_tasks.append(get_datastore_report.s(team_id, data_type))
+    chord(group(book_tasks))(update_datastore.s(team_name=team_name))
 
 
 @app.task
