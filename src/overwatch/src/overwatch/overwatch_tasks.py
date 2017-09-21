@@ -69,7 +69,7 @@ def update_single_pickle_datastore(target_team_id):
     data_types = ['csw', 'visits', 'clients']
     team_data = report_tasks.get_csw_teams()
     for team_id in team_data:
-        if team_id is target_team_id:
+        if team_id == str(target_team_id):
             book_tasks = []
             team_name = team_data[team_id]['team_name']
             book_tasks.append(update_team_book.si(team_id, team_name))
