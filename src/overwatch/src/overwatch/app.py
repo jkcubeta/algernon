@@ -41,9 +41,9 @@ app = Celery('overwatch',
              broker=RABBIT_URL,
              backend=REDIS_URL,
              include=[
-                 'overwatch.overwatch.tasks',
-                 'overwatch.overwatch.overwatch_tasks',
-                 'overwatch.overwatch.similarities'])
+                 'overwatch.tasks',
+                 'overwatch.overwatch_tasks',
+                 'overwatch.similarities'])
 
 app.conf.update(
     result_expires=3600,
@@ -51,32 +51,32 @@ app.conf.update(
 
 app.conf.beat_schedule = {
     'lp_commsupt': {
-        'task': 'overwatch.overwatch.overwatch_tasks.lp_unapproved_commsupt',
+        'task': 'overwatch_tasks.lp_unapproved_commsupt',
         'schedule': crontab(minute='*/5'),
         'args': (),
     },
     'lp_clinical_team': {
-        'task': 'overwatch.overwatch.overwatch_tasks.lp_clinical_team',
+        'task': 'overwatch_tasks.lp_clinical_team',
         'schedule': crontab(minute='*/5'),
         'args': ()
     },
     'update_report_keys': {
-        'task': 'overwatch.overwatch.tasks.update_report_keys',
+        'task': 'tasks.update_report_keys',
         'schedule': crontab(minute='*/10'),
         'args': ()
     },
     'create_pickles': {
-        'task': 'overwatch.overwatch.tasks.create_pickles',
+        'task': 'tasks.create_pickles',
         'schedule': crontab(hour=5, minute=16),
         'args': ()
     },
     'generate_audit_targets': {
-        'task': 'overwatch.overwatch.overwatch_tasks.select_audit_targets',
+        'task': 'overwatch_tasks.select_audit_targets',
         'schedule': crontab(hour=5, minute=11, day_of_week='mon'),
         'args': 5
     },
     'update_data_stores': {
-        'task': 'overwatch.overwatch.overwatch_tasks.update_pickle_datastore',
+        'task': 'overwatch_tasks.update_pickle_datastore',
         'schedule': crontab(minute='*/15'),
         'args': ()
     }

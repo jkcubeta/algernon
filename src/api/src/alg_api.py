@@ -54,7 +54,7 @@ def home():
 
 @api.route('/pickles/data/<int:team_id>', methods=['GET', 'POST'])
 def fire_team_datastore_update(team_id):
-    task_id = celery_app.send_task('overwatch.overwatch_tasks.update_single_pickle_datastore', args=[team_id])
+    task_id = celery_app.send_task('overwatch_tasks.update_single_pickle_datastore', args=[team_id])
     flash(task_id)
     print(task_id)
     return render_template('layout.html')
@@ -62,7 +62,7 @@ def fire_team_datastore_update(team_id):
 
 @api.route('/pickles/data/all', methods=['GET', 'POST'])
 def fire_datastore_update():
-    task_id = celery_app.send_task('overwatch.overwatch_tasks.update_pickle_datastore', args=[])
+    task_id = celery_app.send_task('overwatch_tasks.update_pickle_datastore', args=[])
     flash(task_id)
     return render_template('home.html')
 
@@ -70,21 +70,21 @@ def fire_datastore_update():
 @api.route('/update_emp_email', methods=['POST'])
 def update_emp_email():
     data = request.json
-    task_id = celery_app.send_task('overwatch.overwatch_tasks.update_emp_email', args=[data['emp_id'], data['emp_email']])
+    task_id = celery_app.send_task('overwatch_tasks.update_emp_email', args=[data['emp_id'], data['emp_email']])
     flash(task_id)
     return render_template('home.html')
 
 
 @api.route('/vc/<string:email>')
 def run_single_vc(email):
-    task_id = celery_app.send_task('overwatch.overwatch_tasks.vc_single', args=[email])
+    task_id = celery_app.send_task('overwatch_tasks.vc_single', args=[email])
     flash(task_id)
     return render_template('home.html')
 
 
 @api.route('/pickles/fire')
 def trigger_pickles():
-    task_id = celery_app.send_task('overwatch.tasks.create_pickles', args=[])
+    task_id = celery_app.send_task('tasks.create_pickles', args=[])
     flash(task_id)
     return render_template('home.html')
 
