@@ -1,5 +1,6 @@
 import json
 
+
 def get_config(config_category, config_name):
     with open('/algernon', 'r') as secret_file:
         json_string = secret_file.read()

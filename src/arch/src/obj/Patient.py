@@ -1,4 +1,5 @@
-from datetime import date
+import collections
+from datetime import date, datetime
 
 
 class PatientDataField:
@@ -69,6 +70,9 @@ class PatientDataField:
     def __getitem__(self, item):
         return self.data[item]
 
+    def items(self):
+        return self.__dict__.items()
+
 
 class PatientData:
     def __init__(self):
@@ -91,6 +95,9 @@ class PatientData:
 
     def __getitem__(self, item):
         return self.data[item]
+
+    def items(self):
+        return self.__dict__.items()
 
 
 class PatientExtId(PatientData):
@@ -126,7 +133,22 @@ class PatientDemographics(PatientData):
         super().replace_data(demographic_type, patient_demographic)
 
 
-class Patient:
+class Patient(collections.MutableMapping):
+    def __setitem__(self, key, value):
+        self.patient_data[key] = value
+
+    def __len__(self):
+        return len(self.patient_data)
+
+    def __getitem__(self, key):
+        return self.patient_data[key]
+
+    def __iter__(self):
+        return iter(self.patient_data)
+
+    def __delitem__(self, key):
+        del self.patient_data[key]
+
     def __init__(self, first_name: str, last_name: str, dob: date):
         self.first_name = first_name
         self.last_name = last_name
@@ -139,7 +161,23 @@ class Patient:
             raise KeyError('type for %s already exists, use update instead' % str(data_type))
         self.patient_data[data_type] = patient_data
 
-    def update(self, data_type: object, patient_data: PatientData):
+    def update_patient(self, data_type: object, patient_data: PatientData):
         if data_type not in self.patient_data:
             raise KeyError('type for %s does not exist, use add instead' % str(data_type))
         self.patient_data[data_type] = patient_data
+
+    def to_dict(self):
+        serial = self._unpack(self.__dict__)
+        return serial
+
+    def _unpack(self, o):
+        serial = {}
+        for key, value in o.items():
+            if isinstance(value, date):
+                value = datetime.combine(value, datetime.min.time())
+            if isinstance(value, dict):
+                value = self._unpack(value)
+            if isinstance(value, (Patient, PatientData, PatientDataField)):
+                value = self._unpack(value.data)
+            serial[key] = value
+        return serial
