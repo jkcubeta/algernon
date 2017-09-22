@@ -14,7 +14,7 @@ def get_csw_teams():
     csw_teams = {}
     team_data = get_report_as_dict(649, [])
     for team_id in team_data:
-        if team_data[team_id]['external_id'] == '7':
+        if team_data[team_id]['external_id'] == '7' and 'ACT' not in team_data[team_id]['team_name']:
             csw_teams[team_id] = team_data[team_id]
     return csw_teams
 

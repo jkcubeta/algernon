@@ -5,8 +5,7 @@ services:
   worker:
     image: lane-docker.algernon.lan/overwatch:0.5
     deploy:
-      mode: replicated
-      replicas: 1
+      mode: global
       restart_policy:
         condition: on-failure
       update_config:
