@@ -1,0 +1,4 @@
+celery[redis]
+fluent-logger
+flask
+Flask-OAuthlib

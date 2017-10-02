@@ -1,0 +1,29 @@
+FROM ubuntu
+
+RUN apt-get update
+RUN apt-get upgrade -y
+RUN apt-get install -y python3-pip
+RUN apt-get install -y nano
+RUN apt-get install -y python3-enchant
+RUN pip3 install --upgrade pip
+
+RUN useradd -g users -ms /bin/bash algernon
+
+COPY build/config/lane_requirements.txt /home/algernon/lane/requirements.txt
+
+RUN pip3 install -r /home/algernon/lane/requirements.txt
+
+ENV PATH "$PATH:/home/algernon/bin:/home/algernon/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+COPY /src/core/ /home/algernon/core
+COPY /src/overwatch/ /home/algernon/overwatch
+COPY /src/arch/ /home/algernon/arch
+COPY /src/pump/ /home/algernon/pump
+
+WORKDIR /home/algernon
+
+RUN chown algernon:users /home/algernon -R
+
+USER algernon:users
+
+CMD celery worker -A core.app -E -l INFO

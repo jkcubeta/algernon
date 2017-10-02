@@ -1,0 +1,217 @@
+version: "3.3"
+
+
+services:
+  lane:
+    image: lane-docker.algernon.lan/lane:0.1
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 0.0.0.0:24225
+        tag: alg.worker.{{.Name}}
+    configs:
+      - algernon
+    secrets:
+      - alg_secrets
+      - gmail_robot_keyfile
+      - drive_robot_keyfile
+      - admin_robot_keyfile
+
+  api:
+    image: lane-docker.algernon.lan/alg_api:0.3
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+    configs:
+      - algernon
+    environment:
+      - FLASK_APP=api/alg_api.py
+      - DEBUG=1
+      - LANG=C.UTF-8
+      - LC_ALL=C.UTF-8
+    command: flask run --host=0.0.0.0
+    ports:
+      - '5000:5000'
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 0.0.0.0:24225
+        tag: alg.api.{{.Name}}
+    secrets:
+      - alg_secrets
+      - gmail_robot_keyfile
+      - drive_robot_keyfile
+      - admin_robot_keyfile
+
+  pacemaker:
+    image: lane-docker.algernon.lan/lane:0.1
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+    configs:
+      - algernon
+    command: celery worker -A core.app -E -l INFO -B
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 0.0.0.0:24225
+        tag: alg.pacemaker.{{.Name}}
+    secrets:
+      - alg_secrets
+      - gmail_robot_keyfile
+      - drive_robot_keyfile
+      - admin_robot_keyfile
+
+  flower:
+    image: lane-docker.algernon.lan/lane:0.1
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+    command: celery flower -A core.app --port=5554
+    ports:
+        - "5554:5554"
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 0.0.0.0:24225
+        tag: alg.flower.{{.Name}}
+    configs:
+      - algernon
+    secrets:
+      - alg_secrets
+      - gmail_robot_keyfile
+      - drive_robot_keyfile
+      - admin_robot_keyfile
+
+  rabbitmq:
+    image: rabbitmq
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+    networks:
+      default:
+        aliases:
+          - rabbitmq
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 0.0.0.0:24225
+        tag: alg.rabbit.{{.Name}}
+    secrets:
+      - source: rabbitmq_config
+        target: /etc/rabbitmq/rabbitmq.config
+
+  redis:
+    image: redis
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 0.0.0.0:24225
+        tag: alg.redis.{{.Name}}
+    secrets:
+      - source: redis_conf
+        target: /etc/redis/alg_redis.conf
+    command: ["redis-server", "/etc/redis/alg_redis.conf"]
+
+  fluentd:
+    image: lane-docker.algernon.lan/fluentd:0.1
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+    environment:
+        FLUENTD_CONF: alg_config.conf
+    ports:
+      - "24225:24225"
+    configs:
+      - source: fluent
+        target: /fluentd/etc/alg_config.conf
+
+  mongodb:
+    image: mongo
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+    networks:
+      default:
+        aliases:
+          - mongodb
+    ports:
+      - "27018:27017"
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 0.0.0.0:24225
+        tag: alg.mongo.{{.Name}}
+
+configs:
+  algernon:
+    file: ./algernon/build/config/core_config.json
+  fluent:
+    file: ./algernon/build/config/fluent.conf
+
+secrets:
+  alg_secrets:
+    file: ./algernon/build/secrets/core_secrets.json
+  rabbitmq_config:
+    file: ./algernon/build/secrets/rabbitmq.config
+  redis_conf:
+    file: ./algernon/build/secrets/redis.conf
+  drive_robot_keyfile:
+    file: ./algernon/build/secrets/drive_robot_keyfile.json
+  gmail_robot_keyfile:
+    file: ./algernon/build/secrets/gmail_robot_keyfile.json
+  admin_robot_keyfile:
+    file: ./algernon/build/secrets/admin_robot_keyfile.json

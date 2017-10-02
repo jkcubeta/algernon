@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="dropdown">
+    <button onclick="dropFunction()"  class="dropbtn">service type</button>
+    <div id="myDropdown" class="dropdown-content">
+        {% for entry in entries %}
+        <a href=""></a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
